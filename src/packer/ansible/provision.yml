@@ -9,9 +9,6 @@
       version: "{{ ACTIVEMQ_VERSION|default('5.16.1')|string }}"
       folder: "{{ ACTIVEMQ_HOME|default('/opt/activemq')|string }}"
       checksum: ""
-    java:
-      version: "{{ JAVA_VERSION|default('openjdk-11-jre-headless')|string }}"
-      checksum: ""
     hawtio:
       version: "{{ HAWTIO_VERSION|default('2.13.0')|string }}"
       checksum: ""
@@ -68,14 +65,6 @@
   - name: COPY/UNARCHIVE ACTIVEMQ
     block:
 
-    - name: COPY | Entrypoint
-      ansible.builtin.copy:
-        src: files/docker-entrypoint.sh
-        dest: /docker-entrypoint.sh
-        owner: root
-        group: root
-        mode: '0770'
-
     - name: UNARCHIVE | ActiveMQ
       ansible.builtin.unarchive:
         src: "cache/apache-activemq-{{activemq['version']}}-bin.tar.gz"
@@ -117,8 +106,16 @@
         group: root
         mode: '0640'
 
+  - name: COPY | Entrypoint
+    ansible.builtin.copy:
+      src: files/docker-entrypoint.sh
+      dest: /docker-entrypoint.sh
+      owner: root
+      group: root
+      mode: '0770'
+
 # -----------------------------------------------
-# ADD CONFIGURATION TEMPLATES
+# CONFIGURATION
 # -----------------------------------------------
 
   - name: ADD TEMPLATES
@@ -150,20 +147,4 @@
         dest: "{{activemq['folder']}}/conf/groups.properties"
       loop_control:
         label: "{{item['src']}} -> {{item['dest']}}"
-
-# -----------------------------------------------
-# INSTALL PACKAGES
-# -----------------------------------------------
-
-  - name: INSTALL PACKAGES
-    block:
-
-    - name: INSTALL | Java Runtime
-      ansible.builtin.apt:
-        pkg:
-        - "{{java['version']}}"
-        state: present
-        update_cache: true
-        cache_valid_time: 300
-    when: false
 ...

@@ -28,7 +28,7 @@ build {
 }
 
 build {
-  name    = "provision"
+  name    = "v0.1.0"
   sources = ["source.docker.UBUNTU_PREPARED"]
 
   # PROVISION CONTAINER IMAGE
@@ -40,7 +40,6 @@ build {
       join(" ", [
         "ACTIVEMQ_VERSION=${var.activemq_version}",
         "ACTIVEMQ_HOME=${var.activemq_home}",
-        "JAVA_VERSION=${var.java_version}",
         "HAWTIO_VERSION=${var.hawtio_version}",
         "JDBC_POSTGRES_VERSION=${var.jdbc_postgres_version}",
       ])
@@ -51,7 +50,8 @@ build {
     # TAG CONTAINER IMAGE
     post-processor "docker-tag" {
       repository = var.docker_image_name
-      tags       = ["development"]
+      tags       = ["latest", var.docker_image_tag]
+      #tags       = var.docker_image_tags
     }
 
     # UPLOAD CONTAINER IMAGE

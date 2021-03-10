@@ -4,9 +4,13 @@ variable docker_image_name {
   default = "local/activemq"
 }
 
+variable docker_image_tag {
+  type    = string
+  default = "development"
+}
 variable docker_image_tags {
   type    = list(string)
-  default = ["dev"]
+  default = ["develop"]
 }
 
 variable docker_login_username {

@@ -1,5 +1,5 @@
 export TARGET_BUILD_PREPARE   ?= prepare.docker.UBUNTU_2004
-export TARGET_BUILD_PROVISION ?= provision.docker.UBUNTU_PREPARED
+export TARGET_BUILD_PROVISION ?= v0.1.0.docker.UBUNTU_PREPARED
 
 # Variables passed to PACKER (PKR_VAR_)
 export PKR_VAR_activemq_version      ?= '5.16.1'
@@ -7,7 +7,8 @@ export PKR_VAR_java_version          ?= openjdk-11-jre-headless
 export PKR_VAR_hawtio_version        ?= '2.13.0'
 export PKR_VAR_jdbc_postgres_version ?= '42.2.19'
 
-export PKR_VAR_docker_image_name     ?= local/activemq
+export PKR_VAR_docker_image_name ?= local/activemq
+export PKR_VAR_docker_image_tag  ?= development
 
 prepare:
 	@packer build -only=${TARGET_BUILD_PREPARE} .
