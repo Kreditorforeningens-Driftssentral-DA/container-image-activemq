@@ -32,7 +32,7 @@
         url: "https://archive.apache.org/dist/activemq/{{activemq['version']}}/apache-activemq-{{activemq['version']}}-bin.tar.gz"
         #checksum: "sha512:https://archive.apache.org/dist/activemq/{{activemq['version']}}/apache-activemq-{{activemq['version']}}-bin.tar.gz.sha512"
         checksum: "{{activemq['checksum']}}"
-        mode: '0640'
+        mode: '0666'
         validate_certs: false
         timeout: 30
 
@@ -43,7 +43,7 @@
         url: "https://repo1.maven.org/maven2/io/hawt/hawtio-default/{{hawtio['version']}}/hawtio-default-{{hawtio['version']}}.war"
         #checksum: "sha1:https://repo1.maven.org/maven2/io/hawt/hawtio-default/{{hawtio['version']}}/hawtio-default-{{hawtio['version']}}.war.sha1"
         checksum: "{{hawtio['checksum']}}"
-        mode: '0640'
+        mode: '0666'
         validate_certs: false
         timeout: 30
 
@@ -54,7 +54,7 @@
         dest: "cache/postgresql-{{jdbc['postgres_version']}}.jar"
         checksum: "{{jdbc['checksum']}}"
         #checksum: "123"
-        mode: '0640'
+        mode: '0666'
         validate_certs: false
         timeout: 30
 
