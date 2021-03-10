@@ -1,0 +1,169 @@
+---
+- name: PROVISION ACTIVEMQ (CLASSIC) CONTAINER
+  hosts: default
+  become: true
+  gather_facts: false
+
+  vars:
+    activemq:
+      version: "{{ ACTIVEMQ_VERSION|default('5.16.1')|string }}"
+      folder: "{{ ACTIVEMQ_HOME|default('/opt/activemq')|string }}"
+      checksum: ""
+    java:
+      version: "{{ JAVA_VERSION|default('openjdk-11-jre-headless')|string }}"
+      checksum: ""
+    hawtio:
+      version: "{{ HAWTIO_VERSION|default('2.13.0')|string }}"
+      checksum: ""
+    jdbc:
+      postgres_version: "{{ JDBC_POSTGRES_VERSION|default('42.2.18')|string }}"
+      checksum: ""
+
+  tasks:
+
+# -----------------------------------------------
+# DOWNLOAD REQURED FILES
+# -----------------------------------------------
+
+  - name: DOWNLOAD EXTERNAL RESOURCES
+    block:
+
+    - name: ACTIVEMQ
+      local_action:
+        module: ansible.builtin.get_url
+        dest: "cache/apache-activemq-{{activemq['version']}}-bin.tar.gz"
+        url: "https://archive.apache.org/dist/activemq/{{activemq['version']}}/apache-activemq-{{activemq['version']}}-bin.tar.gz"
+        #checksum: "sha512:https://archive.apache.org/dist/activemq/{{activemq['version']}}/apache-activemq-{{activemq['version']}}-bin.tar.gz.sha512"
+        checksum: "{{activemq['checksum']}}"
+        mode: '0640'
+        validate_certs: false
+        timeout: 30
+
+    - name: HAWTIO
+      local_action:
+        module: ansible.builtin.get_url
+        dest: "cache/hawtio-default-{{hawtio['version']}}.war"
+        url: "https://repo1.maven.org/maven2/io/hawt/hawtio-default/{{hawtio['version']}}/hawtio-default-{{hawtio['version']}}.war"
+        #checksum: "sha1:https://repo1.maven.org/maven2/io/hawt/hawtio-default/{{hawtio['version']}}/hawtio-default-{{hawtio['version']}}.war.sha1"
+        checksum: "{{hawtio['checksum']}}"
+        mode: '0640'
+        validate_certs: false
+        timeout: 30
+
+    - name: POSTGRES JDBC
+      local_action:
+        module: ansible.builtin.get_url
+        url: "https://jdbc.postgresql.org/download/postgresql-{{jdbc['postgres_version']}}.jar"
+        dest: "cache/postgresql-{{jdbc['postgres_version']}}.jar"
+        checksum: "{{jdbc['checksum']}}"
+        #checksum: "123"
+        mode: '0640'
+        validate_certs: false
+        timeout: 30
+
+# -----------------------------------------------
+# COPY LOCAL FILES TO CONTAINER
+# -----------------------------------------------
+
+  - name: COPY/UNARCHIVE ACTIVEMQ
+    block:
+
+    - name: COPY | Entrypoint
+      ansible.builtin.copy:
+        src: files/docker-entrypoint.sh
+        dest: /docker-entrypoint.sh
+        owner: root
+        group: root
+        mode: '0770'
+
+    - name: UNARCHIVE | ActiveMQ
+      ansible.builtin.unarchive:
+        src: "cache/apache-activemq-{{activemq['version']}}-bin.tar.gz"
+        dest: /opt
+
+    - name: SYMLINK | ActiveMQ folder
+      ansible.builtin.file:
+        src: "/opt/apache-activemq-{{activemq['version']}}"
+        dest: "{{activemq['folder']}}"
+        owner: root
+        group: root
+        state: link
+
+  - name: COPY/UNARCHIVE EXTRAS
+    block:
+
+    - name: CREATE | ActiveMQ subfolders
+      ansible.builtin.file:
+        path: "{{item}}"
+        state: directory
+        mode: '0644'
+      loop:
+      - "{{activemq['folder']}}/hawtio"
+      - "{{activemq['folder']}}/lib/optional"
+
+    - name: COPY | Postgres JDBC
+      ansible.builtin.copy:
+        src: "cache/hawtio-default-{{hawtio['version']}}.war"
+        dest: "{{activemq['folder']}}/hawtio/hawtio-default.war"
+        owner: root
+        group: root
+        mode: '0640'
+
+    - name: COPY | Postgres JDBC
+      ansible.builtin.copy:
+        src: "cache/postgresql-{{jdbc['postgres_version']}}.jar"
+        dest: "{{activemq['folder']}}/lib/optional/postgresql-{{jdbc['postgres_version']}}.jar"
+        owner: root
+        group: root
+        mode: '0640'
+
+# -----------------------------------------------
+# ADD CONFIGURATION TEMPLATES
+# -----------------------------------------------
+
+  - name: ADD TEMPLATES
+    block:
+
+    - name: TEMPLATE | Add configuration
+      ansible.builtin.template:
+        src: "templates/{{item['src']}}"
+        dest: "{{item['dest']}}"
+        owner: root
+        group: root
+        mode: '0644'
+      loop:
+      - src: activemq.env
+        dest: "{{activemq['folder']}}/bin/env"
+      - src: activemq.xml
+        dest: "{{activemq['folder']}}/conf/activemq.xml"
+      - src: jetty.xml
+        dest: "{{activemq['folder']}}/conf/jetty.xml"
+      - src: jetty-realm.properties
+        dest: "{{activemq['folder']}}/conf/jetty-realm.properties"
+      - src: credentials.properties
+        dest: "{{activemq['folder']}}/conf/credentials.properties"
+      - src: login.config
+        dest: "{{activemq['folder']}}/conf/login.config"
+      - src: users.properties
+        dest: "{{activemq['folder']}}/conf/users.properties"
+      - src: groups.properties
+        dest: "{{activemq['folder']}}/conf/groups.properties"
+      loop_control:
+        label: "{{item['src']}} -> {{item['dest']}}"
+
+# -----------------------------------------------
+# INSTALL PACKAGES
+# -----------------------------------------------
+
+  - name: INSTALL PACKAGES
+    block:
+
+    - name: INSTALL | Java Runtime
+      ansible.builtin.apt:
+        pkg:
+        - "{{java['version']}}"
+        state: present
+        update_cache: true
+        cache_valid_time: 300
+    when: false
+...
