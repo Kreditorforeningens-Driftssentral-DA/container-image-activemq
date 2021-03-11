@@ -118,8 +118,12 @@
 # CONFIGURATION
 # -----------------------------------------------
 
+    # Replace w/correct module when ansible has fixed naming
   - name: TEMPLATE | Delete unused activemq files/folders
-    ansible.builtin.shell: "/bin/rm -rf {{activemq['folder']}}/{{item}}"
+    #ansible.builtin.shell: "/bin/rm -rf {{activemq['folder']}}/{{item}}"
+    shell: "/bin/rm -rf {{activemq['folder']}}/{{item}}"
+    args:
+      warn: false
     loop:
     - "conf/*.xml"
     - "webapps-demo"
