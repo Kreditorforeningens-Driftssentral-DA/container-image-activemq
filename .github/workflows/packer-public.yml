@@ -12,9 +12,9 @@ jobs:
     - shell: bash
       env:
         TARGET_PREPARE: prepare.docker.UBUNTU_2004
-        TARGET_PROVISION: v0.1.0.docker.UBUNTU_PREPARED
+        TARGET_PROVISION: provision.docker.UBUNTU_PREPARED
         PKR_VAR_docker_image_name: "registry.hub.docker.com/kdsda/activemq"
-        PKR_VAR_docker_image_tag: "0.1.0"
+        PKR_VAR_docker_image_tag: "0.2.0"
         PKR_VAR_docker_login_server: "registry.hub.docker.com"
         PKR_VAR_docker_login_username: "${{ secrets.DOCKER_HUB_USERNAME }}"
         PKR_VAR_docker_login_password: "${{ secrets.DOCKER_HUB_SECRET }}"

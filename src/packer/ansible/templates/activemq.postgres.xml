@@ -5,15 +5,36 @@
 
   <!-- Allows us to use system properties as variables in this configuration file -->
   <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="ignoreUnresolvablePlaceholders" value="true"/>
     <property name="locations">
-      <value>file:${activemq.conf}/credentials.properties</value>
+      <list>
+        <value>file:${activemq.conf}/credentials.properties</value>
+        <value>file:${activemq.conf}/db.properties</value>
+      </list>
     </property>
   </bean>
 
   <bean id="logQuery" class="io.fabric8.insight.log.log4j.Log4jLogQuery" lazy-init="false" scope="singleton" init-method="start" destroy-method="stop">
   </bean>
 
-  <broker xmlns="http://activemq.apache.org/schema/core" brokerName="localhost" dataDirectory="${activemq.data}">
+  <bean id="postgres-ds" class="org.apache.commons.dbcp2.BasicDataSource">
+    <property name="driverClassName" value="org.postgresql.Driver" />
+    <!-- property name="connectionProperties" value="[targetServerType=master,readOnly=false]" /-->
+    <!-- property name="dataSourceName" value="postgres" /-->
+    <property name="username" value="${postgres.username}" />
+    <property name="password" value="${postgres.password}" />
+    <property name="url" value="${postgres.url}" />
+    <property name="initialSize" value="${postgres.init_connections}" />
+    <property name="maxTotal" value="${postgres.max_connections}" />
+    <property name="maxIdle" value="${postgres.idle_connections}" />
+    <property name="validationQuery" value="select 1" />
+    <property name="testWhileIdle" value="true" />
+    <property name="timeBetweenEvictionRunsMillis" value="30000" />
+    <property name="poolPreparedStatements" value="true"/>
+  </bean>
+
+  <!-- broker xmlns="http://activemq.apache.org/schema/core" brokerName="localhost" dataDirectory="${activemq.data}" -->
+  <broker xmlns="http://activemq.apache.org/schema/core" brokerName="localhost" dataDirectory="${activemq.data}" useJmx="true" schedulerSupport="true">
 
     <destinationPolicy>
       <policyMap>
@@ -28,7 +49,7 @@
             http://activemq.apache.org/slow-consumer-handling.html
             -->
             <pendingMessageLimitStrategy>
-              <constantPendingMessageLimitStrategy limit="1000"/>
+              <constantPendingMessageLimitStrategy limit="5000"/>
             </pendingMessageLimitStrategy>
           </policyEntry>
         </policyEntries>
@@ -44,7 +65,8 @@
     http://activemq.apache.org/jmx.html
     -->
     <managementContext>
-      <managementContext createConnector="false"/>
+      <!-- managementContext createConnector="false" /-->
+      <managementContext connectorPort="1099" rmiServerPort="1098" createConnector="true" />
     </managementContext>
 
     <!--
@@ -56,7 +78,13 @@
     -->
 
     <persistenceAdapter>
+      <!--
+      Default adapter:
+
       <kahaDB directory="${activemq.data}/kahadb"/>
+      <jdbcPersistenceAdapter adapter="postgresql-jdbc-adapter"/>
+      -->
+   		<jdbcPersistenceAdapter dataDirectory="${activemq.data}" dataSource="#postgres-ds" createTablesOnStartup="true" />
     </persistenceAdapter>
 
     <!--
@@ -67,15 +95,9 @@
 
     <systemUsage>
       <systemUsage>
-        <memoryUsage>
-          <memoryUsage percentOfJvmHeap="70" />
-        </memoryUsage>
-        <storeUsage>
-          <storeUsage limit="5 gb"/>
-        </storeUsage>
-        <tempUsage>
-          <tempUsage limit="1 gb"/>
-        </tempUsage>
+        <memoryUsage><memoryUsage percentOfJvmHeap="85" /></memoryUsage>
+        <storeUsage><storeUsage limit="10 gb"/></storeUsage>
+        <tempUsage><tempUsage limit="5 gb"/></tempUsage>
       </systemUsage>
     </systemUsage>
 
@@ -88,14 +110,15 @@
 
     <transportConnectors>
       <!--
-      DOS protection, limit concurrent connections to 1000 and frame size to 100MiB (Not MB)
+      https://activemq.apache.org/configuring-wire-formats
+        wireFormat.maxFrameSize: DOS protection, limit concurrent connections to 1000 and frame size to 100MiB (Not MB)
 
       <transportConnector name="amqp" uri="amqp://0.0.0.0:5672?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
       <transportConnector name="stomp" uri="stomp://0.0.0.0:61613?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
       <transportConnector name="mqtt" uri="mqtt://0.0.0.0:1883?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
       <transportConnector name="ws" uri="ws://0.0.0.0:61614?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
       -->
-      <transportConnector name="openwire" uri="tcp://0.0.0.0:61616?maximumConnections=1000&amp;wireFormat.maxFrameSize=1048576000"/>
+      <transportConnector name="openwire" uri="tcp://0.0.0.0:61616?wireFormat.maxInactivityDuration=0&amp;maximumConnections=1000&amp;wireFormat.maxFrameSize=1048576000"/>
     </transportConnectors>
 
     <!-- destroy the spring context on shutdown to stop jetty -->

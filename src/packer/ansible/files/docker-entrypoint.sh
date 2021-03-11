@@ -12,37 +12,53 @@ printf "*** CONTAINER INFO ***\n\n"
 # -----------------------------------------------
 
 case "${1}" in
-  'start')
+  'START')
     printf "\n[ENTRYPOINT] ${1}\n\n"
     shift "${#}"
     set -- /opt/activemq/bin/activemq console
-    ;;
-  'debug')
+  ;;
+
+  'DEBUG')
     printf "\n[ENTRYPOINT] ${1}\n\n"
-    exec /usr/bin/env bash
-    exit 0
+    shift "${#}"
+    set -- /usr/bin/env bash
     ;;
   *)
     printf "\n[ENTRYPOINT INFO]\n\n"
     printf "  Valid Commands:\n"
-    printf "    start -> (default) Start ActiveMQ\n"
-    printf "    debug -> Open shell\n\n"
+    printf "    START -> (default) Start ActiveMQ\n"
+    printf "    DEBUG -> Open command-shell\n\n"
     exit 0
   ;;
 esac
 
 # -----------------------------------------------
-# VALIDATE VARIABLES
-#-----------------------------------------------
+# VALIDATE BACKEND
+# -----------------------------------------------
 
-# Required; exit if missing
-#if [ -z ${REQUIRED_VAR} ]; then echo "[ERROR] Required variable REQUIRED_VAR is not set."; exit 1; fi
-
-# Optional; warn if missing
-#if [ -z ${OPTIONAL_ARG} ]; then echo "[INFO] Variable OPTIONAL_ARG is empty."; fi
+# CHECK REQUESTED BACKEND
+if [ -z $BACKEND ]; then
+  echo "[INFO] Using local persistence backend (kahadb)"
+  rm -f ${ACTIVEMQ_HOME}/conf/activemq.xml
+  ln -s ${ACTIVEMQ_HOME}/conf/activemq.local.xml ${ACTIVEMQ_HOME}/conf/activemq.xml
+elif [ "$BACKEND" == "postgres" ]; then
+  echo "[INFO] Using postgres persistence backend. Loading settings from conf/db.properties"
+  # Validate configuration
+  if [ -z ${POSTGRES_HOST} ]; then echo "[INFO] POSTGRES_HOST is empty. Using default 'localhost'";        export POSTGRES_HOST=postgres; fi
+  if [ -z ${POSTGRES_PORT} ]; then echo "[INFO] POSTGRES_PORT is empty. Using default '5432'";             export POSTGRES_PORT='5432'; fi
+  if [ -z ${POSTGRES_DATABASE} ]; then echo "[INFO] POSTGRES_DATABASE is empty. Using default 'activemq'"; export POSTGRES_DATABASE=postgres; fi
+  if [ -z ${POSTGRES_USERNAME} ]; then echo "[INFO] POSTGRES_USERNAME is empty. Using default 'activemq'"; export POSTGRES_USERNAME=postgres; fi
+  if [ -z ${POSTGRES_PASSWORD} ]; then echo "[INFO] POSTGRES_PASSWORD is empty. Using default 'activemq'"; export POSTGRES_PASSWORD=postgres; fi
+  if [ -z ${POSTGRES_INIT} ]; then echo "[INFO] POSTGRES_INITIALIZE is empty. Using default 'false'";      export POSTGRES_INIT='true'; fi
+  rm -f ${ACTIVEMQ_HOME}/conf/activemq.xml
+  ln -s ${ACTIVEMQ_HOME}/conf/activemq.postgres.xml ${ACTIVEMQ_HOME}/conf/activemq.xml
+else
+  echo "[INFO] Invalid persistence backend requested"
+  exit 1
+fi
 
 # -----------------------------------------------
-# EXECUTE COMMAND
+# VALIDATE USER
 # -----------------------------------------------
 
 if [ -z ${USERNAME} ]; then
@@ -51,5 +67,9 @@ else
   printf "\n[INFO] User: ${USERNAME} \n\n"
   #set -- ${USERNAME} gosu "${@}"
 fi
+
+# -----------------------------------------------
+# EXECUTE COMMAND
+# -----------------------------------------------
 
 exec "${@}"

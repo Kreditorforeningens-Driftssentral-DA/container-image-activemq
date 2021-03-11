@@ -1,0 +1,26 @@
+---
+version: '3.8'
+
+services:
+
+  postgres:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: activemq
+      POSTGRES_PASSWORD: activemq
+      POSTGRES_DB: activemq
+      PGDATA: /tmp/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@kred.no
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    restart: unless-stopped
+  

@@ -18,6 +18,6 @@ source docker "UBUNTU_PREPARED" {
     "ENV ACTIVEMQ_TMP=$${ACTIVEMQ_BASE}/tmp",
     "WORKDIR $${ACTIVEMQ_BASE}",
     "ENTRYPOINT [\"/usr/bin/tini\", \"--\", \"/docker-entrypoint.sh\"]",
-    "CMD [\"start\"]",
+    "CMD [\"START\"]",
   ]
 }

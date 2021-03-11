@@ -1,5 +1,5 @@
 export TARGET_BUILD_PREPARE   ?= prepare.docker.UBUNTU_2004
-export TARGET_BUILD_PROVISION ?= v0.1.0.docker.UBUNTU_PREPARED
+export TARGET_BUILD_PROVISION ?= provision.docker.UBUNTU_PREPARED
 
 # Variables passed to PACKER (PKR_VAR_)
 export PKR_VAR_activemq_version      ?= '5.16.1'

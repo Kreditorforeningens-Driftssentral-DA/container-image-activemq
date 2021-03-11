@@ -1,0 +1,19 @@
+---
+version: '3.8'
+
+services:
+  activemq:
+    image: local/activemq:latest
+    depends_on:
+    - postgres
+    environment:
+      BACKEND: postgres
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: '5432'
+      POSTGRES_DATABASE: activemq
+      POSTGRES_USERNAME: activemq
+      POSTGRES_PASSWORD: activemq
+      PGDATA: /tmp/data
+    ports:
+      - "8161:8161"
+    restart: unless-stopped

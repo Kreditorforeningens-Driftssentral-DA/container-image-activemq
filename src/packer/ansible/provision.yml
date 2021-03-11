@@ -96,7 +96,7 @@
         dest: "{{activemq['folder']}}/hawtio/hawtio-default.war"
         owner: root
         group: root
-        mode: '0640'
+        mode: '0644'
 
     - name: COPY | Postgres JDBC
       ansible.builtin.copy:
@@ -104,7 +104,7 @@
         dest: "{{activemq['folder']}}/lib/optional/postgresql-{{jdbc['postgres_version']}}.jar"
         owner: root
         group: root
-        mode: '0640'
+        mode: '0644'
 
   - name: COPY | Entrypoint
     ansible.builtin.copy:
@@ -112,16 +112,25 @@
       dest: /docker-entrypoint.sh
       owner: root
       group: root
-      mode: '0770'
+      mode: '0774'
 
 # -----------------------------------------------
 # CONFIGURATION
 # -----------------------------------------------
 
+  - name: TEMPLATE | Delete unused activemq files/folders
+    ansible.builtin.shell: "/bin/rm -rf {{activemq['folder']}}/{{item}}"
+    args:
+      warn: false
+    loop:
+    - "conf/*.xml"
+    - "webapps-demo"
+    - "examples"
+
   - name: ADD TEMPLATES
     block:
 
-    - name: TEMPLATE | Add configuration
+    - name: TEMPLATE | Add/override configuration
       ansible.builtin.template:
         src: "templates/{{item['src']}}"
         dest: "{{item['dest']}}"
@@ -131,20 +140,24 @@
       loop:
       - src: activemq.env
         dest: "{{activemq['folder']}}/bin/env"
-      - src: activemq.xml
-        dest: "{{activemq['folder']}}/conf/activemq.xml"
-      - src: jetty.xml
+      - src: activemq.local.xml
+        dest: "{{activemq['folder']}}/conf/activemq.local.xml"
+      - src: activemq.postgres.xml
+        dest: "{{activemq['folder']}}/conf/activemq.postgres.xml"
+      - src: jetty.default.xml
         dest: "{{activemq['folder']}}/conf/jetty.xml"
-      - src: jetty-realm.properties
-        dest: "{{activemq['folder']}}/conf/jetty-realm.properties"
-      - src: credentials.properties
-        dest: "{{activemq['folder']}}/conf/credentials.properties"
       - src: login.config
         dest: "{{activemq['folder']}}/conf/login.config"
+      - src: credentials.properties
+        dest: "{{activemq['folder']}}/conf/credentials.properties"
       - src: users.properties
         dest: "{{activemq['folder']}}/conf/users.properties"
       - src: groups.properties
         dest: "{{activemq['folder']}}/conf/groups.properties"
+      - src: db.properties
+        dest: "{{activemq['folder']}}/conf/db.properties"
+      - src: jetty-realm.properties
+        dest: "{{activemq['folder']}}/conf/jetty-realm.properties"
       loop_control:
         label: "{{item['src']}} -> {{item['dest']}}"
 ...
