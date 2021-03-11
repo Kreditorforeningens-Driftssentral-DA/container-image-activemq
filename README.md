@@ -2,7 +2,7 @@
 
 ![Public Image Builds](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-activemq/workflows/Packer%20Public/badge.svg?branch=main)
 
-Container image for ActiveMQ (Classic)
+Container image for ActiveMQ (Classic) | See on [Docker Hub](https://hub.docker.com/r/kdsda/activemq)
 
 ## HOW TO USE THIS IMAGE
 This image will start an activemq instance, listening on ports 61616 (openwire) & 8161 (admin/hawtio)
