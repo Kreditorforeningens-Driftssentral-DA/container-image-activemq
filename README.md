@@ -1,4 +1,7 @@
 # ACTIVEMQ
+
+![Public Image Builds](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-activemq/workflows/Packer%20Public/badge.svg?branch=main)
+
 Container image for ActiveMQ (Classic)
 
 ## HOW TO USE THIS IMAGE
