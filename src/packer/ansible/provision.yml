@@ -120,8 +120,6 @@
 
   - name: TEMPLATE | Delete unused activemq files/folders
     ansible.builtin.shell: "/bin/rm -rf {{activemq['folder']}}/{{item}}"
-    args:
-      warn: false
     loop:
     - "conf/*.xml"
     - "webapps-demo"
