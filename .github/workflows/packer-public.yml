@@ -23,7 +23,6 @@ jobs:
         PKR_VAR_jdbc_postgres_version: '42.2.19'
       run: |
         # [ACTIVEMQ] BUILD & PUSH TO DOCKER HUB
-        set -e
         packer version
         docker --version
         ansible --version | head -n 1
