@@ -8,7 +8,7 @@ printf "    OS: $(cat /etc/issue.net)\n"
 printf "*** CONTAINER INFO ***\n\n"
 
 # -----------------------------------------------
-# VALIDATE STARTUP COMMANDS
+# VALIDATE STARTUP COMMAND
 # -----------------------------------------------
 
 case "${1}" in
@@ -33,7 +33,7 @@ case "${1}" in
 esac
 
 # -----------------------------------------------
-# VALIDATE BACKEND
+# CONFIGURE PERSISTENCE BACKEND
 # -----------------------------------------------
 
 # CHECK REQUESTED BACKEND
@@ -58,18 +58,23 @@ else
 fi
 
 # -----------------------------------------------
-# VALIDATE USER
+# VALIDATE USERNAME
 # -----------------------------------------------
+# TODO: Set user at runtime
 
 if [ -z ${USERNAME} ]; then
   printf "\n[WARNING] User: root\n\n"
 else
   printf "\n[INFO] User: ${USERNAME} \n\n"
-  #set -- ${USERNAME} gosu "${@}"
 fi
+
+# -----------------------------------------------
+# SET PASSWORD(S)
+# -----------------------------------------------
+# TODO: Customize password at runtime
 
 # -----------------------------------------------
 # EXECUTE COMMAND
 # -----------------------------------------------
-
+# TODO: use gosu
 exec "${@}"
