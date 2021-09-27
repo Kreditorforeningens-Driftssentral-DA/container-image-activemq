@@ -1,4 +1,5 @@
 # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# TODO: Create scheduled weekly builds (updating prepare/base image)
 ---
 name: Packer Public
 
