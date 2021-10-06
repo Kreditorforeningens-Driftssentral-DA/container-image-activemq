@@ -56,7 +56,7 @@
     <property name="handlers">
       <list>
         <ref bean="rewriteHandler"/>
-        {%- if hawtio_enabled == 'true' %}
+        {% if hawtio_enabled == 'true' -%}
         <bean class="org.eclipse.jetty.webapp.WebAppContext">
           <property name="contextPath" value="/hawtio" />
           <property name="war" value="${activemq.home}/hawtio/hawtio-default.war" />
