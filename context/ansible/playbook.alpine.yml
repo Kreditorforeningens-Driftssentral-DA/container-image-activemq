@@ -14,12 +14,12 @@
   gather_facts: false
 
   vars:
-    java_version: openjdk11-jre-headless
-    activemq_version: "5.16.3"
+    activemq_version: "{{ PACKER_ACTIVEMQ_VERSION|default('5.16.3')|string }}"
+    hawtio_version: "{{ PACKER_HAWTIO_VERSION|default('2.14.0')|string }}"
+    jdbc_version: "{{ PACKER_JDBC_VERSION|default('42.2.24')|string }}"
+    java_version: "{{ PACKER_JAVA_VERSION|default('openjdk11-jre-headless')|string }}"
     activemq_url: "https://downloads.apache.org/activemq/{{activemq_version}}/apache-activemq-{{activemq_version}}-bin.tar.gz"
-    hawtio_version: "2.9.1"
     hawtio_url: "https://repo1.maven.org/maven2/io/hawt/hawtio-default/{{hawtio_version}}/hawtio-default-{{hawtio_version}}.war"
-    jdbc_version: "42.2.24"
     jdbc_url: "https://jdbc.postgresql.org/download/postgresql-{{jdbc_version}}.jar"
     activemq_user: activemq
     activemq_home: /opt/activemq
@@ -63,8 +63,6 @@
       - path: "{{activemq_data}}"
         mode: "774"
       - path: "{{activemq_home}}/conf"
-        mode: "774"
-      - path: "{{activemq_home}}/tmp"
         mode: "774"
       - path: "{{activemq_home}}/hawtio"
         mode: "774"
@@ -121,13 +119,21 @@
         no_cache: true
 
 # =================================================================================================  
-# CONFIGURE
+# CONFIGURE | (just an example; file gets replaced on startup)
 # =================================================================================================  
 
   - name: === CONFIGURE ===
     tags:
     - configure
     block:
+    - name: Correct folder permissions
+      ansible.builtin.file:
+        path: "{{activemq_home}}"
+        state: directory
+        recurse: true
+        owner: "{{activemq_user}}"
+        group: "{{activemq_user}}"
+
     - name: Update files
       ansible.builtin.replace:
         path: "{{item.path}}"

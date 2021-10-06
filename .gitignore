@@ -8,5 +8,5 @@ crash.log
 *.box
 
 # Other
-__*
-tests/*
+**/__*
+**/tests/*

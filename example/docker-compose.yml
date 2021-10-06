@@ -3,12 +3,13 @@ version: '3.9'
 
 services:
   activemq:
-    image: local/activemq:alpine
+    image: registry.hub.docker.com/kdsda/activemq:latest
     depends_on:
     - postgres
     environment:
       ACTIVEMQ_USERNAME: demo
       ACTIVEMQ_PASSWORD: demo123
+      HAWTIO_ENABLED: 'true'
       POSTGRES_ENABLED: 'true'
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
@@ -33,5 +34,4 @@ services:
       POSTGRES_USER: activemq
       POSTGRES_PASSWORD: activemq
       POSTGRES_DB: activemq
- 
 ...

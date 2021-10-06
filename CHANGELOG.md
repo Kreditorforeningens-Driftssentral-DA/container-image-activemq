@@ -1,8 +1,16 @@
 # CHANGELOG
 
-## 0.3.0 (Unreleased)
-#### FEATURES
-  * Reworked: Use Ansible for provisoning, use ansible for startup
+## 5.16.3 (Unreleased)
+#### CHANGES
+  * Changed TAG to follow activemq release
+  * Changed distribution: ALPINE:3
+  * Reworked provisoning-steps
+  * Added ansible for pre-start configuration (runtime). Customize using environment-variables
+#### VERSIONS
+  * **JAVA:** openjdk-11 (jre-headless)
+  * **ACTIVEMQ:** 5.16.3
+  * **HAWTIO:** 2.14.0
+  * **JDBC:** 42.2.24
 
 ## 0.2.0 (2021-03-11)
 #### ADDED FEATURE(S)
