@@ -1,0 +1,15 @@
+{% if postgres_enabled %}
+# https://medium.com/swlh/build-a-docker-image-for-activemq-5-x-with-a-postgresql-persistence-889e2d4c66a5
+postgres.host={{postgres_host|string}}
+postgres.port={{postgres_port|int}}
+postgres.database={{postgres_database|string}}
+postgres.username={{postgres_username|string}}
+postgres.password={{postgres_password|string}}
+postgres.init_db={{postgres_init|string}}
+postgres.init_connections={{postgres_conn_init|int}}
+postgres.idle_connections={{postgres_conn_idle|int}}
+postgres.max_connections={{postgres_conn_max|int}}
+postgres.url=jdbc:postgresql://${postgres.host}:${postgres.port}/${postgres.database}?targetServerType=master
+{% else %}
+kahadb.dir=kahadb
+{% endif %}

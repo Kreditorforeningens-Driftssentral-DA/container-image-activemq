@@ -10,14 +10,14 @@
     <property name="name" value="BASIC" />
     <property name="roles" value="user,admin" />
     <!-- set authenticate=false to disable login -->
-    <property name="authenticate" value="true" />
+    <property name="authenticate" value="{{auth_enabled}}" />
   </bean>
 
   <bean id="adminSecurityConstraint" class="org.eclipse.jetty.util.security.Constraint">
     <property name="name" value="BASIC" />
     <property name="roles" value="admin" />
     <!-- set authenticate=false to disable login -->
-    <property name="authenticate" value="true" />
+    <property name="authenticate" value="{{auth_enabled}}" />
   </bean>
 
   <bean id="securityConstraintMapping" class="org.eclipse.jetty.security.ConstraintMapping">
@@ -56,14 +56,13 @@
     <property name="handlers">
       <list>
         <ref bean="rewriteHandler"/>
-
-        <!-- HAWTIO WAR CONFIG START -->
+        {%- if hawtio_enabled %}
         <bean class="org.eclipse.jetty.webapp.WebAppContext">
           <property name="contextPath" value="/hawtio" />
           <property name="war" value="${activemq.home}/hawtio/hawtio-default.war" />
           <property name="logUrlOnStart" value="true"/>
         </bean>
-        <!-- HAWTIO CONFIG END -->
+        {%- endif %}
 
         <bean class="org.eclipse.jetty.webapp.WebAppContext">
           <property name="contextPath" value="/admin" />
