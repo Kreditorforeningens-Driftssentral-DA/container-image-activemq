@@ -1,0 +1,140 @@
+# Ansible Modules in playbook:
+# - https://docs.ansible.com/ansible/latest/collections/ansible/builtin/group_module.html
+# - https://docs.ansible.com/ansible/latest/collections/ansible/builtin/user_module.html
+# - https://docs.ansible.com/ansible/latest/collections/ansible/builtin/file_module.html
+# - https://docs.ansible.com/ansible/latest/collections/ansible/builtin/copy_module.html
+# - https://docs.ansible.com/ansible/latest/collections/ansible/builtin/get_url_module.html
+# - https://docs.ansible.com/ansible/latest/collections/ansible/builtin/unarchive_module.html
+# - https://docs.ansible.com/ansible/latest/collections/ansible/builtin/replace_module.html
+# - https://docs.ansible.com/ansible/latest/collections/community/general/apk_module.html
+---
+- name: PACKER | PROVISION ACTIVEMQ CONTAINER
+  hosts: 127.0.0.1
+  connection: local
+  gather_facts: false
+
+  vars:
+    java_version: openjdk11-jre-headless
+    activemq_version: "5.16.3"
+    activemq_url: "https://downloads.apache.org/activemq/{{activemq_version}}/apache-activemq-{{activemq_version}}-bin.tar.gz"
+    hawtio_version: "2.9.1"
+    hawtio_url: "https://repo1.maven.org/maven2/io/hawt/hawtio-default/{{hawtio_version}}/hawtio-default-{{hawtio_version}}.war"
+    jdbc_version: "42.2.24"
+    jdbc_url: "https://jdbc.postgresql.org/download/postgresql-{{jdbc_version}}.jar"
+    activemq_user: activemq
+    activemq_home: /opt/activemq
+    activemq_data: /data/activemq
+
+  tasks:
+# =================================================================================================  
+# PREPARE
+# =================================================================================================  
+
+  - name: === PREPARE ===
+    tags:
+    - prepare
+    block:
+
+    - name: Create Group
+      ansible.builtin.group:
+        name: "{{activemq_user}}"
+        state: present
+        gid: 1250
+
+    - name: Create User
+      ansible.builtin.user:
+        name: "{{activemq_user}}"
+        group: "{{activemq_user}}"
+        home: "{{activemq_home}}"
+        comment: "ActiveMQ service user"
+        state: present
+        uid: 1250
+
+    - name: Create Folders
+      ansible.builtin.file:
+        path: "{{item.path}}"
+        state: directory
+        mode: "{{item.mode}}"
+        owner: "{{activemq_user}}"
+        group: "{{activemq_user}}"
+      loop:
+      - path: "{{activemq_home}}"
+        mode: "0774"
+      - path: "{{activemq_data}}"
+        mode: "774"
+      - path: "{{activemq_home}}/conf"
+        mode: "774"
+      - path: "{{activemq_home}}/tmp"
+        mode: "774"
+      - path: "{{activemq_home}}/hawtio"
+        mode: "774"
+      - path: "{{activemq_home}}/lib/optional"
+        mode: "774"
+
+# =================================================================================================
+# INSTALL
+# =================================================================================================  
+
+  - name: === INSTALL ===
+    tags:
+    - install
+    block:
+
+    - name: Download and Unarchive ActiveMQ
+      ansible.builtin.unarchive:
+        src: "{{activemq_url}}"
+        validate_certs: false
+        remote_src: true
+        dest: "{{activemq_home}}"
+        owner: "{{activemq_user}}"
+        group: "{{activemq_user}}"
+        extra_opts: # Strip root folder
+        - "--strip-components=1"
+      #ignore_errors: true
+
+    - name: Download HawtIO
+      ansible.builtin.get_url:
+        url: "{{hawtio_url}}"
+        validate_certs: false
+        dest: "{{activemq_home}}/hawtio/hawtio-default.war"
+        mode: '0770'
+        owner: "{{activemq_user}}"
+        group: "{{activemq_user}}"
+        timeout: 30
+      #ignore_errors: true
+
+    - name: Download Postgres JDBC
+      ansible.builtin.get_url:
+        url: "{{jdbc_url}}"
+        validate_certs: false
+        dest: "{{activemq_home}}/lib/optional"
+        mode: '0770'
+        owner: "{{activemq_user}}"
+        group: "{{activemq_user}}"
+        timeout: 30
+      #ignore_errors: true
+
+    - name: Install Java Runtime
+      community.general.apk:
+        name: "{{java_version}}"
+        state: latest
+        no_cache: true
+
+# =================================================================================================  
+# CONFIGURE
+# =================================================================================================  
+
+  - name: === CONFIGURE ===
+    tags:
+    - configure
+    block:
+    - name: Update files
+      ansible.builtin.replace:
+        path: "{{item.path}}"
+        regexp: "{{item.regexp}}"
+        replace: "{{item.replace}}"
+      loop:
+      - path: "{{activemq_home}}/conf/jetty.xml"
+        regexp: '<property name="host" value="127.0.0.1"/>'
+        replace: '<property name="host" value="0.0.0.0"/>'
+...

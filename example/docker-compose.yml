@@ -1,0 +1,37 @@
+---
+version: '3.9'
+
+services:
+  activemq:
+    image: local/activemq:alpine
+    depends_on:
+    - postgres
+    environment:
+      ACTIVEMQ_USERNAME: demo
+      ACTIVEMQ_PASSWORD: demo123
+      POSTGRES_ENABLED: 'true'
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USERNAME: activemq
+      POSTGRES_PASSWORD: activemq
+      POSTGRES_DATABASE: activemq
+      POSTGRES_INIT: 'true'
+      POSTGRES_DB: activemq
+    ports:
+    - 8161:8161
+
+  adminer:
+    image: adminer:latest
+    depends_on:
+    - postgres
+    ports:
+    - 8080:8080  
+
+  postgres:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: activemq
+      POSTGRES_PASSWORD: activemq
+      POSTGRES_DB: activemq
+ 
+...

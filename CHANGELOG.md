@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.3.0 (Unreleased)
+#### FEATURES
+  * Reworked: Use Ansible for provisoning, use ansible for startup
+
 ## 0.2.0 (2021-03-11)
 #### ADDED FEATURE(S)
   * Added support for using postgres persistence driver (configured via env)

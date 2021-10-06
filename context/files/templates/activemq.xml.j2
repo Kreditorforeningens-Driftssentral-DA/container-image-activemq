@@ -1,4 +1,3 @@
-<!-- START SNIPPET: example -->
 <beans xmlns="http://www.springframework.org/schema/beans"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
   http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
@@ -16,23 +15,23 @@
 
   <bean id="logQuery" class="io.fabric8.insight.log.log4j.Log4jLogQuery" lazy-init="false" scope="singleton" init-method="start" destroy-method="stop">
   </bean>
-
+  {% if postgres_enabled %}
   <bean id="postgres-ds" class="org.apache.commons.dbcp2.BasicDataSource">
     <property name="driverClassName" value="org.postgresql.Driver" />
-    <!-- property name="connectionProperties" value="[targetServerType=master,readOnly=false]" /-->
-    <!-- property name="dataSourceName" value="postgres" /-->
+    <property name="url" value="${postgres.url}" />
     <property name="username" value="${postgres.username}" />
     <property name="password" value="${postgres.password}" />
-    <property name="url" value="${postgres.url}" />
     <property name="initialSize" value="${postgres.init_connections}" />
     <property name="maxTotal" value="${postgres.max_connections}" />
     <property name="maxIdle" value="${postgres.idle_connections}" />
     <property name="validationQuery" value="select 1" />
     <property name="testWhileIdle" value="true" />
     <property name="timeBetweenEvictionRunsMillis" value="30000" />
-    <property name="poolPreparedStatements" value="true"/>
+    <!-- property name="poolPreparedStatements" value="true" /-->
+    <!-- property name="connectionProperties" value="[targetServerType=master,readOnly=false]" /-->
+    <!-- property name="dataSourceName" value="postgres" /-->
   </bean>
-
+  {% endif %}
   <!-- broker xmlns="http://activemq.apache.org/schema/core" brokerName="localhost" dataDirectory="${activemq.data}" -->
   <broker xmlns="http://activemq.apache.org/schema/core" brokerName="localhost" dataDirectory="${activemq.data}" useJmx="true" schedulerSupport="true">
 
@@ -49,7 +48,7 @@
             http://activemq.apache.org/slow-consumer-handling.html
             -->
             <pendingMessageLimitStrategy>
-              <constantPendingMessageLimitStrategy limit="5000"/>
+              <constantPendingMessageLimitStrategy limit="10000"/>
             </pendingMessageLimitStrategy>
           </policyEntry>
         </policyEntries>
@@ -69,22 +68,13 @@
       <managementContext connectorPort="1099" rmiServerPort="1098" createConnector="true" />
     </managementContext>
 
-    <!--
-    Configure message persistence for the broker. The default persistence
-    mechanism is the KahaDB store (identified by the kahaDB tag).
-    For more information, see:
-
-    http://activemq.apache.org/persistence.html
-    -->
-
+    <!-- See http://activemq.apache.org/persistence.html -->
     <persistenceAdapter>
-      <!--
-      Default adapter:
-
+    {% if postgres_enabled -%}
+      <jdbcPersistenceAdapter dataDirectory="${activemq.data}" dataSource="#postgres-ds" createTablesOnStartup="{{postgres_init}}" />
+    {% else %}
       <kahaDB directory="${activemq.data}/kahadb"/>
-      <jdbcPersistenceAdapter adapter="postgresql-jdbc-adapter"/>
-      -->
-   		<jdbcPersistenceAdapter dataDirectory="${activemq.data}" dataSource="#postgres-ds" createTablesOnStartup="true" />
+    {% endif -%}
     </persistenceAdapter>
 
     <!--
@@ -95,9 +85,15 @@
 
     <systemUsage>
       <systemUsage>
-        <memoryUsage><memoryUsage percentOfJvmHeap="85" /></memoryUsage>
-        <storeUsage><storeUsage limit="10 gb"/></storeUsage>
-        <tempUsage><tempUsage limit="5 gb"/></tempUsage>
+        <memoryUsage>
+          <memoryUsage percentOfJvmHeap="85" />
+        </memoryUsage>
+        <storeUsage>
+          <storeUsage limit="10 gb"/>
+        </storeUsage>
+        <tempUsage>
+          <tempUsage limit="5 gb"/>
+        </tempUsage>
       </systemUsage>
     </systemUsage>
 
@@ -110,31 +106,38 @@
 
     <transportConnectors>
       <!--
-      https://activemq.apache.org/configuring-wire-formats
+        https://activemq.apache.org/configuring-wire-formats
         wireFormat.maxFrameSize: DOS protection, limit concurrent connections to 1000 and frame size to 100MiB (Not MB)
-
-      <transportConnector name="amqp" uri="amqp://0.0.0.0:5672?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
-      <transportConnector name="stomp" uri="stomp://0.0.0.0:61613?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
-      <transportConnector name="mqtt" uri="mqtt://0.0.0.0:1883?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
-      <transportConnector name="ws" uri="ws://0.0.0.0:61614?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
       -->
-      <transportConnector name="openwire" uri="tcp://0.0.0.0:61616?wireFormat.maxInactivityDuration=0&amp;maximumConnections=1000&amp;wireFormat.maxFrameSize=1048576000"/>
+      {% if transport_ampq -%}
+      <transportConnector name="amqp" uri="amqp://0.0.0.0:5672?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
+      {%- endif %}
+      {% if transport_stomp -%}
+      <transportConnector name="stomp" uri="stomp://0.0.0.0:61613?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
+      {%- endif %}
+      {% if transport_mqtt -%}
+      <transportConnector name="mqtt" uri="mqtt://0.0.0.0:1883?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
+      {%- endif %}
+      {% if transport_ws -%}
+      <transportConnector name="ws" uri="ws://0.0.0.0:61614?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
+      {%- endif %}
+      {% if transport_openwire -%}
+      <transportConnector name="openwire" uri="{{transport_openwire_uri}}"/>
+      {%- endif %}
     </transportConnectors>
 
     <!-- destroy the spring context on shutdown to stop jetty -->
     <shutdownHooks>
       <bean xmlns="http://www.springframework.org/schema/beans" class="org.apache.activemq.hooks.SpringContextHook" />
     </shutdownHooks>
-
   </broker>
 
   <!--
   Enable web consoles, REST and Ajax APIs and demos
   The web consoles requires by default login, you can disable this in the jetty.xml file
-
   Take a look at ${ACTIVEMQ_HOME}/conf/jetty.xml for more details
   -->
   <import resource="jetty.xml"/>
 
 </beans>
-<!-- END SNIPPET: example -->
+
