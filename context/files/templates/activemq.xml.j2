@@ -15,7 +15,7 @@
 
   <bean id="logQuery" class="io.fabric8.insight.log.log4j.Log4jLogQuery" lazy-init="false" scope="singleton" init-method="start" destroy-method="stop">
   </bean>
-  {% if postgres_enabled %}
+  {% if postgres_enabled == 'true'  %}
   <bean id="postgres-ds" class="org.apache.commons.dbcp2.BasicDataSource">
     <property name="driverClassName" value="org.postgresql.Driver" />
     <property name="url" value="${postgres.url}" />
@@ -70,8 +70,8 @@
 
     <!-- See http://activemq.apache.org/persistence.html -->
     <persistenceAdapter>
-    {% if postgres_enabled -%}
-      <jdbcPersistenceAdapter dataDirectory="${activemq.data}" dataSource="#postgres-ds" createTablesOnStartup="{{postgres_init}}" />
+    {% if postgres_enabled == 'true' -%}
+      <jdbcPersistenceAdapter dataDirectory="${activemq.data}" dataSource="#postgres-ds" createTablesOnStartup="{{postgres_init|string|lower}}" />
     {% else %}
       <kahaDB directory="${activemq.data}/kahadb"/>
     {% endif -%}
@@ -109,19 +109,19 @@
         https://activemq.apache.org/configuring-wire-formats
         wireFormat.maxFrameSize: DOS protection, limit concurrent connections to 1000 and frame size to 100MiB (Not MB)
       -->
-      {% if ampq_enabled -%}
+      {% if ampq_enabled == 'true' -%}
       <transportConnector name="amqp" uri="amqp://0.0.0.0:5672?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
       {% endif %}
-      {% if stomp_enabled -%}
+      {% if stomp_enabled == 'true' -%}
       <transportConnector name="stomp" uri="stomp://0.0.0.0:61613?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
       {% endif %}
-      {% if mqtt_enabled -%}
+      {% if mqtt_enabled == 'true' -%}
       <transportConnector name="mqtt" uri="mqtt://0.0.0.0:1883?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
       {% endif %}
-      {% if ws_enabled -%}
+      {% if ws_enabled == 'true' -%}
       <transportConnector name="ws" uri="ws://0.0.0.0:61614?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600"/>
       {% endif %}
-      {% if openwire_enabled -%}
+      {% if openwire_enabled == 'true' -%}
       <transportConnector name="openwire" uri="tcp://0.0.0.0:61616?wireFormat.maxInactivityDuration={{openwire_maxinactivity}}&amp;maximumConnections={{openwire_maxconn}}&amp;wireFormat.maxFrameSize={{openwire_maxframesize}}"/>
       {% endif %}
     </transportConnectors>
@@ -140,4 +140,3 @@
   <import resource="jetty.xml"/>
 
 </beans>
-
