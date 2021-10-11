@@ -54,3 +54,9 @@ The container supports the following customization before startup
 ## LINKS
   * https://activemq.apache.org/web-console
   * https://j2live.ttl255.com/
+
+## CHECK JAVA SETTINGS
+```bash
+# Example: JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=25.0 -XX:+ExitOnOutOfMemoryError"
+java -XX:+PrintFlagsFinal -version | grep -E "UseContainerSupport | InitialRAMPercentage | MaxRAMPercentage | MinRAMPercentage | MaxHeapSize | ExitOnOutOfMemoryError"
+```

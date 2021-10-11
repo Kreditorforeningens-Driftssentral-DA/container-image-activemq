@@ -3,7 +3,12 @@ version: '3.9'
 
 services:
   activemq:
-    image: registry.hub.docker.com/kdsda/activemq:latest
+    image: kdsda/activemq:latest
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: '384M'
     depends_on:
     - postgres
     environment:
@@ -18,20 +23,34 @@ services:
       POSTGRES_DATABASE: activemq
       POSTGRES_INIT: 'true'
       POSTGRES_DB: activemq
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=85.0 -XX:InitialRAMPercentage=25.0 -XX:+ExitOnOutOfMemoryError"
+      # java -XX:+PrintFlagsFinal -version | grep -E "UseContainerSupport | InitialRAMPercentage | MaxRAMPercentage | MaxHeapSize | ExitOnOutOfMemoryError"
     ports:
     - 8161:8161
 
-  adminer:
-    image: adminer:latest
-    depends_on:
-    - postgres
-    ports:
-    - 8080:8080  
-
   postgres:
     image: postgres:14-alpine
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: '64M'
     environment:
       POSTGRES_USER: activemq
       POSTGRES_PASSWORD: activemq
       POSTGRES_DB: activemq
+
+  adminer:
+    image: adminer:latest
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: '32M'
+    depends_on:
+    - postgres
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    ports:
+    - 8080:8080  
 ...
