@@ -11,7 +11,7 @@ env:
   REGISTRY_GITHUB: ghcr.io
   REGISTRY_GITHUB_IMAGE: ${{ github.repository }}
   REGISTRY_DOCKERHUB: registry.hub.docker.com
-  REGISTRY_DOCKERHUB_IMAGE: kdsda/nomad-pack
+  REGISTRY_DOCKERHUB_IMAGE: kdsda/activemq
 
 jobs:
   docker-build-and-push:
