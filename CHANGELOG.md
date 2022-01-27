@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 2022-01-26
+  * Added dockerfile builds to actions (automated). Pushes to GitHub registry.
+
 ## 5.16.3 (Unreleased)
 #### CHANGES
   * Changed TAG to follow activemq release
