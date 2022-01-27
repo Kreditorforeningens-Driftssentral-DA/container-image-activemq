@@ -1,15 +1,17 @@
 ---
-name: Docker Public (GitHub)
+name: Build (Docker)
 
 on:
   workflow_dispatch:
 
   schedule:
-  - cron: '30 0 15 * *' # https://crontab.guru/#30_0_15_*_*
+  - cron: '30 0 15 * *' # https://crontab.guru/
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  REGISTRY_GITHUB: ghcr.io
+  REGISTRY_GITHUB_IMAGE: ${{ github.repository }}
+  REGISTRY_DOCKERHUB: registry.hub.docker.com
+  REGISTRY_DOCKERHUB_IMAGE: kdsda/nomad-pack
 
 jobs:
   docker-build-and-push:
@@ -25,7 +27,6 @@ jobs:
       matrix:
         java_version:
         - '11'
-        #- '8'
         activemq_version:
         - '5.16.3'
         - '5.15.15'
@@ -41,18 +42,27 @@ jobs:
         echo "::set-output name=date::$(date +'%Y-%m-%d')"
         echo "::set-output name=week::$(date +'%Y.%V')"
     -
-      name: Login to Registry (GitHub)
+      name: Login to GitHub registry
       uses: docker/login-action@v1 
       with:
-        registry: ${{ env.REGISTRY }}
+        registry: ${{ env.REGISTRY_GITHUB }}
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     -
-      name: Docker meta
+      name: Login to Docker Hub registry
+      uses: docker/login-action@v1 
+      with:
+        registry: ${{ env.REGISTRY_DOCKERHUB }}
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+    -
+      name: Docker metadata
       id: meta
       uses: docker/metadata-action@v3
       with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        images: |
+          ${{ env.REGISTRY_GITHUB }}/${{ env.REGISTRY_GITHUB_IMAGE }}
+          ${{ env.REGISTRY_DOCKERHUB }}/${{ env.REGISTRY_DOCKERHUB_IMAGE }}
         flavor: |
           latest=auto
           prefix=${{ matrix.java_version }}-,onlatest=true
@@ -60,11 +70,13 @@ jobs:
           type=raw,value=${{ matrix.activemq_version }}-${{ steps.timestamp.outputs.week }}
           type=raw,value=${{ matrix.activemq_version }}
         labels: |
-          no.kred.image.maintainer='Kreditorforeningen'
-          no.kred.image.vendor='Kreditorforeningen'
-          no.kred.image.title='ActiveMQ (Classic)'
-          no.kred.image.description='ActiveMQ (Classic) Container Image'
-          no.kred.image.timestamp="${{ steps.timestamp.outputs.date }}"
+          org.opencontainers.image.title='activemq'
+          org.opencontainers.image.description='ActiveMQ (Classic)'
+          org.opencontainers.image.version="{{ matrix.activemq_version }}"
+          org.opencontainers.image.vendor='Kreditorforeningen'
+          org.opencontainers.image.authors='drift@kred.no'
+          org.opencontainers.image.source='https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-activemq'
+          org.opencontainers.image.created="${{ steps.timestamp.outputs.date }}"
     -
       name: Set up QEMU
       uses: docker/setup-qemu-action@v1
