@@ -1,10 +1,22 @@
 # ACTIVEMQ
 ![Public Image Builds](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-activemq/workflows/Packer%20Public/badge.svg?branch=main)
+[![Docker Public (GitHub)](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-activemq/actions/workflows/docker-public.yml/badge.svg)](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-activemq/actions/workflows/docker-public.yml)
 
-Container image for ActiveMQ (Classic) | See on [Docker Hub](https://hub.docker.com/r/kdsda/activemq)
+#### Container image for ActiveMQ (Classic)
 
-## HOW TO USE THIS IMAGE
-This image will start an activemq instance
+  * Container @[DockerHub](https://hub.docker.com/r/kdsda/activemq)
+  * Container @[GitHub](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-activemq/pkgs/container/container-image-activemq)
+  * Source @[GitHub](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-activemq/)
+
+#### External Links
+  * https://activemq.apache.org/web-console
+  * https://j2live.ttl255.com/
+
+## DOCKER HUB IMAGE
+
+#### Default credentials:
+  * Username: system
+  * Password: manager
 
 ```bash
 # Using docker-compose in example/ folder
@@ -15,17 +27,11 @@ docker-compose up
 docker run --rm -it -p 8161:8161 kdsda/activemq:latest
 ```
 
-#### DEFAULT CREDENTIALS
-Default credentials (web/queue):
-  * Username: system
-  * Password: manager
-
-## CUSTOMIZATION
+#### VARIABLES
 The container supports the following customization before startup
 
-#### ADMIN USER
-| Environment            | Type   | Default           | Description              |
-|------------------------|-------:|:------------------|--------------------------|
+| VARIABLE | TYPE | DEFAULT | DESCRIPTION |
+| :-- | --: | :-- | :-- |
 | ACTIVEMQ_USERNAME      | string | system            ||
 | ACTIVEMQ_USERNAME      | string | manager           ||
 | POSTGRES_ENABLED       | bool   | false             | Use postgres persistence backend |
@@ -51,9 +57,8 @@ The container supports the following customization before startup
 | OPENWIRE_MAXFRAMESIZE  | int    | 1048576000        ||
 | AUTH_ENABLED           | boot   | true              | Set 'false' to disable authentication |
 
-## LINKS
-  * https://activemq.apache.org/web-console
-  * https://j2live.ttl255.com/
+## GITHUB IMAGE
+See [docker/README.md](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-activemq/blob/main/docker/README.md)
 
 ## CHECK JAVA SETTINGS
 ```bash

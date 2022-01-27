@@ -1,6 +1,8 @@
 # CHANGELOG
 
 ## 2022-01-26
+  * Updated documentation/README.md
+  * Added scheduled builds for 5.16.x & 5.15.x (jre-11)
   * Added dockerfile builds to actions (automated). Pushes to GitHub registry.
 
 ## 5.16.3 (Unreleased)
