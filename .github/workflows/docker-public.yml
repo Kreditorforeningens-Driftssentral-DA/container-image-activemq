@@ -80,8 +80,8 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         build-args: |
-          IMAGE_NAME="azul/zulu-openjdk-debian"
-          IMAGE_TAG="${{ matrix.java_version }}"
-          ACTIVEMQ_VERSION="${{ matrix.activemq_version }}"
-          HAWTIO_VERSION="2.14.4"
-          JDBC_VERSION="42.3.1"
+          IMAGE_NAME=azul/zulu-openjdk-debian
+          IMAGE_TAG=${{ matrix.java_version }}
+          ACTIVEMQ_VERSION=${{ matrix.activemq_version }}
+          HAWTIO_VERSION=2.14.4
+          JDBC_VERSION=42.3.1
