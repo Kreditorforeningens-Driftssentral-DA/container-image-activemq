@@ -1,26 +1,22 @@
-ARG IMAGE_NAME_BUILD="debian"
-ARG IMAGE_TAG_BUILD="stable"
+# Build arguments
+ARG image_build="debian:stable"
+ARG image_runtime="azul/zulu-openjdk-debian:11"
 
-ARG IMAGE_NAME="azul/zulu-openjdk-debian"
-ARG IMAGE_TAG="11"
+#///////////////////////////////////////////////
+#// STAGE 1: Download external resources
+#///////////////////////////////////////////////
 
-# ===============================================
-# STAGE 1: Preparing external resources
-# ===============================================
+FROM "${image_build}" as pre
 
-FROM "${IMAGE_NAME_BUILD}:${IMAGE_TAG_BUILD}" as pre
+# Build args
+ARG exports=/opt/activemq
+ARG activemq_version="5.16.4"
+ARG hawtio_version="2.14.5"
+ARG jdbc_version="42.3.3"
 
-# BUILD ARGUMENTS
-ARG ACTIVEMQ_VERSION="5.16.3"
-ARG ACTIVEMQ_URL="https://dlcdn.apache.org/activemq/${ACTIVEMQ_VERSION}/apache-activemq-${ACTIVEMQ_VERSION}-bin.tar.gz"
-
-ARG HAWTIO_VERSION="2.14.4"
-ARG HAWTIO_URL="https://repo1.maven.org/maven2/io/hawt/hawtio-default/${HAWTIO_VERSION}/hawtio-default-${HAWTIO_VERSION}.war"
-
-ARG JDBC_VERSION="42.3.1"
-ARG JDBC_URL="https://repo1.maven.org/maven2/org/postgresql/postgresql/${JDBC_VERSION}/postgresql-${JDBC_VERSION}.jar"
-
-ENV EXPORT_FOLDER=/opt/activemq
+ARG activemq_url="https://archive.apache.org/dist/activemq/${activemq_version}/apache-activemq-${activemq_version}-bin.tar.gz"
+ARG hawtio_url="https://repo1.maven.org/maven2/io/hawt/hawtio-default/${hawtio_version}/hawtio-default-${hawtio_version}.war"
+ARG jdbc_url="https://repo1.maven.org/maven2/org/postgresql/postgresql/${jdbc_version}/postgresql-${jdbc_version}.jar"
 
 RUN set -ex \
   && echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections \
@@ -29,38 +25,38 @@ RUN set -ex \
   && apt-get -qqy install ssl-cert tar unzip curl \
   && apt-get autoclean
 
-# Add ActiveMQ
+# ActiveMQ
 RUN set -ex \
-  && mkdir -p ${EXPORT_FOLDER} \
-  && mkdir -p ${EXPORT_FOLDER}/tmp \
-  && curl -fsSL --retry 3 ${ACTIVEMQ_URL} -o /tmp/amq.tar.gz \
-  && tar xzf /tmp/amq.tar.gz -C ${EXPORT_FOLDER} --strip-components=1 \
+  && mkdir -p ${exports} \
+  && mkdir -p ${exports}/tmp \
+  && curl -fsSL --retry 3 ${activemq_url} -o /tmp/amq.tar.gz \
+  && tar xzf /tmp/amq.tar.gz -C ${exports} --strip-components=1 \
   && rm -rf /tmp/*.tar.gz
 
-# Add webapp(s)
+# Hawtio
 RUN set -ex \
-  && mkdir -p ${EXPORT_FOLDER}/webapps/hawtio \
-  && curl -fsSL --retry 3 ${HAWTIO_URL} -o ${EXPORT_FOLDER}/webapps/hawtio/hawtio-default.war
+  && mkdir -p ${exports}/webapps/hawtio \
+  && curl -fsSL --retry 3 ${hawtio_url} -o ${exports}/webapps/hawtio/hawtio-default.war
 
-# Add JDBC driver(s)
+# Postgres JDBC
 RUN set -ex \
-  && mkdir -p ${EXPORT_FOLDER}/lib/optional \
-  && curl -fsSL --retry 3 ${JDBC_URL} -o ${EXPORT_FOLDER}/lib/optional/postgresql-jdbc.jar
+  && mkdir -p ${exports}/lib/optional \
+  && curl -fsSL --retry 3 ${jdbc_url} -o ${exports}/lib/optional/postgresql-jdbc.jar
 
-# Customize for running in a container
+# Customize defaults for container use
 RUN set -ex \
-  && sed -i 's/127.0.0.1/0.0.0.0/g' ${EXPORT_FOLDER}/conf/jetty.xml \
-  && sed -i 's/127.0.0.1/0.0.0.0/g' ${EXPORT_FOLDER}/conf/activemq.xml \
-  && sed -i 's/^ACTIVEMQ_OPTS_MEMORY=/#ACTIVEMQ_OPTS_MEMORY=/g' ${EXPORT_FOLDER}/bin/env
+  && sed -i 's/127.0.0.1/0.0.0.0/g' ${exports}/conf/jetty.xml \
+  && sed -i 's/127.0.0.1/0.0.0.0/g' ${exports}/conf/activemq.xml \
+  && sed -i 's/^ACTIVEMQ_OPTS_MEMORY=/#ACTIVEMQ_OPTS_MEMORY=/g' ${exports}/bin/env
 
-# ===============================================
-# STAGE 2: Create runtime image
-# ===============================================
+#///////////////////////////////////////////////
+#// STAGE 2: Create runtime image
+#///////////////////////////////////////////////
 
-FROM "${IMAGE_NAME}:${IMAGE_TAG}"
+FROM "${image_runtime}"
 
-# BUILD ARGUMENTS
-# N/A
+# Build args
+ARG build_imports=/opt/activemq
 
 ENV ACTIVEMQ_USER="activemq" \
     ACTIVEMQ_HOME="/opt/activemq"
@@ -75,7 +71,7 @@ ENV PATH="${ACTIVEMQ_HOME}/bin:${PATH}" \
     TZ="UTC" \
     JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=85.0 -XX:InitialRAMPercentage=85.0 -XX:+ExitOnOutOfMemoryError"
 
-# CONTAINER CONFIGURATION
+# Add default user
 RUN set -ex \
   && useradd \
      --comment "ActiveMQ user" \
@@ -86,6 +82,7 @@ RUN set -ex \
      --user-group \
      ${ACTIVEMQ_USER}
 
+# Add required applications
 RUN set -ex \
   && echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections \
   && apt-get update \
@@ -93,13 +90,13 @@ RUN set -ex \
   && apt-get -qqy install --no-install-recommends ssl-cert gosu dumb-init \
   && apt-get autoclean
 
-# APPLICATION CONFIGURATION
-COPY --from=pre --chown=${ACTIVEMQ_USER} ["/opt/activemq","${ACTIVEMQ_HOME}"]
+# Add files
+COPY --from=pre --chown=${ACTIVEMQ_USER} ["${build_imports}","${ACTIVEMQ_HOME}"]
 
-# CONTAINER STARTUP
+VOLUME ["${ACTIVEMQ_DATA}"]
 EXPOSE 1883 5672 8161 61613 61614 61616
 WORKDIR "${ACTIVEMQ_HOME}"
 
-COPY --chmod=750 ["scripts/docker-entrypoint.debian.sh","/usr/local/bin/docker-entrypoint.sh"]
+COPY --chmod=751 ["scripts/docker-entrypoint.debian.sh","/usr/local/bin/docker-entrypoint.sh"]
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
-#CMD ["activemq","console"]
+CMD ["activemq","console"]
