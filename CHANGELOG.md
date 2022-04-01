@@ -1,6 +1,7 @@
 # CHANGELOG
 
 ## 2022-04-01
+  * Removed java-version from TAG. All current use jre-11
   * Added 5.17.0 build to pipeline ([Release notes](https://issues.apache.org/jira/secure/ReleaseNote.jspa?projectId=12311210&version=12346476)) (docker pull ghcr.io/kreditorforeningens-driftssentral-da/container-image-activemq:11-5.17.0)
 
 ## 2022-01-26

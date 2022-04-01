@@ -28,10 +28,7 @@ jobs:
       matrix:
         image_build: ["debian:stable"]
         image_runtime: ["azul/zulu-openjdk-debian:11"]
-        activemq_version:
-        - '5.17.0'
-        - '5.16.4'
-        - '5.15.15'
+        activemq_version: ["5.17.0", "5.16.4", "5.15.15"]
         hawtio_version: ["2.14.5"]
         jdbc_version: ["42.3.3"]
 
@@ -65,9 +62,6 @@ jobs:
       uses: docker/metadata-action@v3
       with:
         images: ${{ env.REGISTRY_GITHUB }}/${{ env.REGISTRY_GITHUB_IMAGE }}
-        flavor: |
-          latest=auto
-          prefix=${{ matrix.java_version }}-,onlatest=true
         tags: |
           type=raw,value=${{ matrix.activemq_version }}-${{ steps.timestamp.outputs.week }}
           type=raw,value=${{ matrix.activemq_version }}
@@ -98,9 +92,8 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         build-args: |
-          image_build=debian:stable
+          image_build=${{ matrix.image_build }}
           image_runtime=${{ matrix.image_runtime }}
           activemq_version=${{ matrix.activemq_version }}
-          jdbc_version=${{ matrix.java_version }}
           hawtio_version=${{ matrix.hawtio_version }}
           jdbc_version=${{ matrix.jdbc_version }}
