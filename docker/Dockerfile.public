@@ -87,7 +87,7 @@ RUN set -ex \
   && echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections \
   && apt-get update \
   && apt-get -qqy install --no-install-recommends apt-utils > /dev/null 2>&1 \
-  && apt-get -qqy install --no-install-recommends ssl-cert gosu dumb-init \
+  && apt-get -qqy install --no-install-recommends procps ssl-cert gosu dumb-init \
   && apt-get autoclean
 
 # Add files

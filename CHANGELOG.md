@@ -1,11 +1,15 @@
 # CHANGELOG
 
-## 2022-04-01
+## 2022-05-03
+
+DOCKERFILE (DEBIAN)
+  * Added package "procps" (ps is used in default startup-script)
 
 BUILD-PIPELINE (GITHUB IMAGES)
   * Added builds: 5.17.1, 5.16.5
   * Removed builds: 5.15.*, 5.16.4, 5.17.0
   * Updated postgres jdbc to 42.3.4
+
 ---
 ## 2022-04-01
   * Removed java-version from TAG. All current use jre-11
