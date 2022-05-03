@@ -28,9 +28,11 @@ jobs:
       matrix:
         image_build: ["debian:stable"]
         image_runtime: ["azul/zulu-openjdk-debian:11"]
-        activemq_version: ["5.17.0", "5.16.4", "5.15.15"]
+        activemq_version:
+        - '5.17.1'
+        - '5.16.5'
         hawtio_version: ["2.14.5"]
-        jdbc_version: ["42.3.3"]
+        jdbc_version: ["42.3.4"]
 
     steps:
     -
@@ -68,11 +70,11 @@ jobs:
         labels: |
           org.opencontainers.image.title='activemq'
           org.opencontainers.image.description='ActiveMQ (Classic)'
-          org.opencontainers.image.version="{{ matrix.activemq_version }}"
+          org.opencontainers.image.version={{ matrix.activemq_version }}
           org.opencontainers.image.vendor='Kreditorforeningen'
           org.opencontainers.image.authors='drift@kred.no'
           org.opencontainers.image.source='https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-activemq'
-          org.opencontainers.image.created="${{ steps.timestamp.outputs.date }}"
+          org.opencontainers.image.created=${{ steps.timestamp.outputs.date }}
     -
       name: Set up QEMU
       uses: docker/setup-qemu-action@v1

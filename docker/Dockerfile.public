@@ -10,9 +10,9 @@ FROM "${image_build}" as pre
 
 # Build args
 ARG exports=/opt/activemq
-ARG activemq_version="5.16.4"
+ARG activemq_version="5.17.1"
 ARG hawtio_version="2.14.5"
-ARG jdbc_version="42.3.3"
+ARG jdbc_version="42.3.4"
 
 ARG activemq_url="https://archive.apache.org/dist/activemq/${activemq_version}/apache-activemq-${activemq_version}-bin.tar.gz"
 ARG hawtio_url="https://repo1.maven.org/maven2/io/hawt/hawtio-default/${hawtio_version}/hawtio-default-${hawtio_version}.war"
