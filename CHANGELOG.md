@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2022-05-04
+
+BUILD-PIPELINE (GITHUB IMAGES)
+  * Fixed the sed-expression for removing "ACTIVEMQ_OPTS_MEMORY" settings from default env-file (Xmx and Xmx config not used in modern containers)
+
+---
+
 ## 2022-05-03
 
 DOCKERFILE (DEBIAN)
