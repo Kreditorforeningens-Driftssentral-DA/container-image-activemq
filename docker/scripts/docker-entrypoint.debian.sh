@@ -3,7 +3,8 @@
 log(){
   printf "[%s] %s\n" "$(date)" "${1}" | tee -a  /var/log/activemq-startup.log
 }
-log "Container startup"
+
+log "Container initializing.."
 
 # Run custom startup-scripts (as root)
 if [[ "${SCRIPT_DIR}" ]] && [[ -d "${SCRIPT_DIR}" ]]; then
@@ -37,10 +38,14 @@ fi
 
 # Execute as activemq, using gosu (unless root)
 if [[ "${ACTIVEMQ_USER}" != "root" ]]; then
+log "Updating folder permissions.."
   chown -R activemq:activemq ${ACTIVEMQ_HOME}
+  chown -R activemq:activemq ${ACTIVEMQ_CONF}
+  chown -R activemq:activemq ${ACTIVEMQ_DATA}
+  chown -R activemq:activemq ${ACTIVEMQ_TMP}
   set -- gosu activemq:activemq ${@}
 fi
 
 # Execute application
-log "Command (User: ${ACTIVEMQ_USER}): $(echo ${@})"
+log "Starting ActiveMQ as ${ACTIVEMQ_USER}: $(echo ${@})"
 exec ${@}
