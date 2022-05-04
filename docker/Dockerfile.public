@@ -47,7 +47,7 @@ RUN set -ex \
 RUN set -ex \
   && sed -i 's/127.0.0.1/0.0.0.0/g' ${exports}/conf/jetty.xml \
   && sed -i 's/127.0.0.1/0.0.0.0/g' ${exports}/conf/activemq.xml \
-  && sed -ri 's/^(\s*)ACTIVEMQ_OPTS_MEMORY=(.*)/#\1ACTIVEMQ_OPTS_MEMORY="-XX:MaxRAMPercentage=85.0 -XX:InitialRAMPercentage=85.0 -XX:+ExitOnOutOfMemoryError"/g' ${exports}/bin/env
+  && sed -ri 's/^(\s*)ACTIVEMQ_OPTS_MEMORY=(.*)/\1ACTIVEMQ_OPTS_MEMORY="-XX:MaxRAMPercentage=85.0 -XX:InitialRAMPercentage=85.0 -XX:+ExitOnOutOfMemoryError"/g' ${exports}/bin/env
 
 #///////////////////////////////////////////////
 #// STAGE 2: Create runtime image
