@@ -1,7 +1,6 @@
 # ACTIVEMQ
-![Public Image Builds](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-activemq/workflows/Packer%20Public/badge.svg?branch=main)
-[![Docker Public (GitHub)](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-activemq/actions/workflows/docker-public.yml/badge.svg)](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-activemq/actions/workflows/docker-public.yml)
-
+![Build (Packer)](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-activemq/workflows/Packer%20Public/badge.svg?branch=main)
+[![Build (Docker)](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-activemq/actions/workflows/docker-build.yml/badge.svg)](https://github.com/Kreditorforeningens-Driftssentral-DA/container-image-activemq/actions/workflows/docker-build.yml)
 #### Container image for ActiveMQ (Classic)
 
   * Container @[DockerHub](https://hub.docker.com/r/kdsda/activemq)
