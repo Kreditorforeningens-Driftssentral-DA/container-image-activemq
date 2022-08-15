@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2022-08-15
+
+BUILD-PIPELINE (GITHUB IMAGES)
+  * Bumped jdbc- & hawtio-versions
+
 ## 2022-05-04
 
 BUILD-PIPELINE (GITHUB IMAGES)
