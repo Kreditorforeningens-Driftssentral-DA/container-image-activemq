@@ -29,11 +29,10 @@ jobs:
         image_build: ["debian:stable"]
         image_runtime: ["azul/zulu-openjdk-debian:11"]
         activemq_version:
+        - '5.18.2'
         - '5.18.1'
+        - '5.17.5'
         - '5.17.4'
-        - '5.17.3'
-        - '5.17.2'
-        - '5.17.1'
         hawtio_version: ["2.16.2"]
         jdbc_version: ["42.5.1"]
 
